@@ -1,0 +1,480 @@
+/* TipTap Editor Styles */
+.editor-content {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+}
+
+.editor-content h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+}
+
+.editor-content h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+}
+
+.editor-content h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.editor-content h4 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+}
+
+.editor-content h5 {
+  font-size: 0.83em;
+  font-weight: bold;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+}
+
+.editor-content h6 {
+  font-size: 0.67em;
+  font-weight: bold;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+}
+
+.editor-content p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.editor-content ul,
+.editor-content ol {
+  padding-left: 2em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  list-style-position: outside;
+}
+
+.editor-content ul {
+  list-style-type: disc;
+}
+
+.editor-content ol {
+  list-style-type: decimal;
+}
+
+.editor-content ul ul {
+  list-style-type: circle;
+}
+
+.editor-content ul ul ul {
+  list-style-type: square;
+}
+
+.editor-content li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+  display: list-item;
+}
+
+.editor-content li p {
+  margin: 0;
+}
+
+.editor-content strong {
+  font-weight: bold;
+}
+
+.editor-content em {
+  font-style: italic;
+}
+
+.editor-content u {
+  text-decoration: underline;
+}
+
+/* Code Snippet Styles */
+.editor-content code {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+  font-size: 0.85em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Preformatted Code Block Styles (for future compatibility) */
+.editor-content pre {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.editor-content pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+.editor-content s {
+  text-decoration: line-through;
+}
+
+.editor-content hr {
+  border: none;
+  border-top: 2px solid hsl(var(--border));
+  margin: 2em 0;
+}
+
+/* Link Styles */
+.editor-link {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.editor-link:hover {
+  color: hsl(var(--primary) / 0.8);
+}
+
+/* Table Styles - Target both .ProseMirror and .editor-table for guaranteed visibility */
+.ProseMirror table,
+.editor-content table,
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1em 0;
+  overflow: hidden;
+  border: 2px solid #ccc;
+  /* Fallback */
+  border-color: hsl(var(--border));
+  background-color: hsl(var(--background));
+  display: table;
+}
+
+.ProseMirror td,
+.ProseMirror th,
+.editor-content td,
+.editor-content th,
+.editor-table td,
+.editor-table th {
+  border: 1px solid #ccc;
+  /* Fallback */
+  border-color: hsl(var(--border));
+  padding: 8px 12px;
+  position: relative;
+  vertical-align: top;
+  box-sizing: border-box;
+  min-width: 50px;
+  min-height: 40px;
+  height: 40px;
+}
+
+/* Ensure empty cells are visible */
+.ProseMirror td:empty::before,
+.ProseMirror th:empty::before,
+.editor-content td:empty::before,
+.editor-content th:empty::before,
+.editor-table td:empty::before,
+.editor-table th:empty::before {
+  content: '\00a0';
+}
+
+.ProseMirror td:hover,
+.editor-content td:hover,
+.editor-table td:hover {
+  background-color: hsl(var(--accent) / 0.1);
+}
+
+.ProseMirror th,
+.editor-content th,
+.editor-table th {
+  background-color: hsl(var(--muted));
+  font-weight: bold;
+  text-align: left;
+  border-bottom: 2px solid hsl(var(--border));
+}
+
+.editor-table .selectedCell {
+  background-color: hsl(var(--accent) / 0.3);
+}
+
+/* Column Resize Handle - Enhanced for Production */
+.ProseMirror .column-resize-handle,
+.editor-content .column-resize-handle,
+.editor-table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -1px;
+  width: 4px;
+  background-color: transparent;
+  cursor: col-resize;
+  pointer-events: all;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+/* Visual feedback on hover */
+.ProseMirror .column-resize-handle:hover,
+.editor-content .column-resize-handle:hover,
+.editor-table .column-resize-handle:hover {
+  background-color: hsl(var(--primary) / 0.5);
+}
+
+/* Selectedcell state */
+.ProseMirror .selectedCell .column-resize-handle,
+.editor-content .selectedCell .column-resize-handle,
+.editor-table .selectedCell .column-resize-handle {
+  background-color: hsl(var(--primary));
+}
+
+/* Placeholder */
+.editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+/* Selection */
+.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+}
+
+/* Focus */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Highlight */
+.editor-content mark {
+  background-color: yellow;
+  padding: 0 0.2em;
+  border-radius: 0.2em;
+}
+
+/* Page breaks for multi-page layout */
+.page-container {
+  page-break-after: always;
+  break-after: page;
+  position: relative;
+  min-height: 1300px !important;
+  /* Removed max-height to allow "adding another page" by simply scrolling */
+  overflow: visible;
+
+  /* Visual Page Guides (A4 Height: 1123px) */
+  background-image: linear-gradient(to bottom,
+      transparent calc(1300px - 10px),
+      hsl(var(--border)) calc(1300px - 10px),
+      hsl(var(--border)) 1300px);
+  background-size: 100% 1300px;
+  background-repeat: repeat-y;
+}
+
+@media screen {
+  .page-container {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Page break indicator */
+  .page-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -72px;
+    right: -72px;
+    height: 2px;
+    background: linear-gradient(to right,
+        transparent 0%,
+        hsl(var(--border)) 10%,
+        hsl(var(--border)) 90%,
+        transparent 100%);
+    pointer-events: none;
+  }
+}
+
+/* Image styles */
+.editor-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+
+.editor-content img:hover {
+  box-shadow: 0 0 0 2px hsl(var(--border));
+}
+
+.editor-content img.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  position: relative;
+}
+
+/* Image rotation */
+.editor-content img[data-rotation="90"] {
+  transform: rotate(90deg);
+}
+
+.editor-content img[data-rotation="180"] {
+  transform: rotate(180deg);
+}
+
+.editor-content img[data-rotation="270"] {
+  transform: rotate(270deg);
+}
+
+/* Image flip */
+.editor-content img[data-flip-h="true"] {
+  transform: scaleX(-1);
+}
+
+.editor-content img[data-flip-v="true"] {
+  transform: scaleY(-1);
+}
+
+/* Combined flip and rotation */
+.editor-content img[data-flip-h="true"][data-rotation="90"] {
+  transform: scaleX(-1) rotate(90deg);
+}
+
+.editor-content img[data-flip-h="true"][data-rotation="180"] {
+  transform: scaleX(-1) rotate(180deg);
+}
+
+.editor-content img[data-flip-h="true"][data-rotation="270"] {
+  transform: scaleX(-1) rotate(270deg);
+}
+
+.editor-content img[data-flip-v="true"][data-rotation="90"] {
+  transform: scaleY(-1) rotate(90deg);
+}
+
+.editor-content img[data-flip-v="true"][data-rotation="180"] {
+  transform: scaleY(-1) rotate(180deg);
+}
+
+.editor-content img[data-flip-v="true"][data-rotation="270"] {
+  transform: scaleY(-1) rotate(270deg);
+}
+
+.editor-content img[data-flip-h="true"][data-flip-v="true"] {
+  transform: scale(-1, -1);
+}
+
+/* Image alignment styles */
+.editor-content img[data-alignment="left"] {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.editor-content img[data-alignment="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.editor-content img[data-alignment="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Text wrapping styles */
+.editor-content img[data-text-wrap="inline"] {
+  display: block;
+  clear: both;
+}
+
+.editor-content img[data-text-wrap="wrap"] {
+  float: left;
+  margin-right: 1.5em;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+}
+
+.editor-content img[data-text-wrap="break"] {
+  display: block;
+  clear: both;
+  margin: 1em 0;
+}
+
+.editor-content img[data-text-wrap="behind"] {
+  position: relative;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+.editor-content img[data-text-wrap="front"] {
+  position: relative;
+  z-index: 10;
+}
+
+/* Resize handles for selected images */
+.editor-content img.ProseMirror-selectednode::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px dashed hsl(var(--primary));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Corner resize handles */
+.editor-content img.ProseMirror-selectednode::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: hsl(var(--primary));
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+/* Visual resize handle indicators */
+.editor-content .selected-image {
+  position: relative;
+}
+
+.editor-content .selected-image::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px dashed hsl(var(--primary));
+  pointer-events: none;
+}
+
+/* Resize cursor hints */
+.editor-content img.ProseMirror-selectednode {
+  cursor: move;
+}
+
+.editor-content img.ProseMirror-selectednode:hover {
+  cursor: nwse-resize;
+}
