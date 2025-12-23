@@ -36,7 +36,7 @@ export function DocumentEditor(props: EditorProps = {}) {
   // PDF State
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale] = useState<number>(1.4);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sidebarViewMode, setSidebarViewMode] = useState<'list' | 'grid'>('list');
   const [isGridOpen, setIsGridOpen] = useState(false);
@@ -145,21 +145,19 @@ export function DocumentEditor(props: EditorProps = {}) {
         </TabsContent>
 
         <TabsContent value="pdf" className="flex-1 overflow-hidden h-full m-0 p-0">
-          <TabsContent value="pdf" className="flex-1 overflow-hidden h-full m-0 p-0">
-            <PDFViewer
-              file={pdfFile}
-              numPages={numPages}
-              currentPage={currentPage}
-              scale={scale}
-              isSidebarOpen={isSidebarOpen}
-              sidebarViewMode={sidebarViewMode}
-              isGridOpen={isGridOpen}
-              onNumPagesChange={setNumPages}
-              onPageChange={handlePdfPageChange}
-              onSidebarViewModeChange={setSidebarViewMode}
-              onGridOpenChange={setIsGridOpen}
-            />
-          </TabsContent>
+          <PDFViewer
+            file={pdfFile}
+            numPages={numPages}
+            currentPage={currentPage}
+            scale={scale}
+            isSidebarOpen={isSidebarOpen}
+            sidebarViewMode={sidebarViewMode}
+            isGridOpen={isGridOpen}
+            onNumPagesChange={setNumPages}
+            onPageChange={handlePdfPageChange}
+            onSidebarViewModeChange={setSidebarViewMode}
+            onGridOpenChange={setIsGridOpen}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -22,9 +22,9 @@ export const PDFSidebar = ({
     }
 
     return (
-        <div className={`pdf-sidebar flex flex-col border-r border-border bg-background h-screen ${className}`}>
+        <div className={`pdf-sidebar flex flex-col border-r pt-14 border-border bg-background ${className}`}>
             {/* Scrollable Thumbnails Area */}
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto p-2 h-screen">
                 <div className={viewMode === 'list' ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
                     {Array.from({ length: numPages }, (_, index) => (
                         <PDFThumbnail

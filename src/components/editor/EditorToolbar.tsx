@@ -212,7 +212,22 @@ export function EditorToolbar({
   };
 
   return (
-    <div className="bg-toolbar-bg border-b border-toolbar-border p-2 flex flex-wrap items-center gap-1 sticky top-0 z-50">
+    <div className="
+  fixed
+  top-0
+  left-0
+  right-0
+  z-50
+  bg-toolbar-bg
+  border-b
+  border-toolbar-border
+  p-2
+  flex
+  flex-wrap
+  items-center
+  gap-1
+">
+
       {/* View Toggles */}
       <div className="flex gap-1 mr-2 bg-muted/30 p-1 rounded-md">
         <Button
@@ -255,12 +270,25 @@ export function EditorToolbar({
         />
       </Button>
 
-      <Separator orientation="vertical" className="h-6" />
-      <Separator orientation="vertical" className="h-6" />
+      {/* <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-6" /> */}
 
       {activeTab === 'pdf' && pdfState && onPdfStateChange && (
-        <>
+        <div className="flex items-center justify-center gap-1" >
+
           <Button
+            variant={pdfState.isGridOpen ? "default" : "ghost"}
+            size="sm"
+            onClick={() => onPdfStateChange.setIsGridOpen(true)}
+            title="Page Overview"
+          >
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Overview
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* <Button
             variant={pdfState.isSidebarOpen ? "default" : "ghost"}
             size="icon"
             onClick={() => onPdfStateChange.setIsSidebarOpen(!pdfState.isSidebarOpen)}
@@ -268,11 +296,10 @@ export function EditorToolbar({
             title="Toggle Sidebar"
           >
             <PanelLeftDashed className="h-4 w-4" />
-          </Button>
+          </Button> */}
+          {/* <Separator orientation="vertical" className="h-6" /> */}
 
-          <Separator orientation="vertical" className="h-6" />
-
-          <div className="flex gap-1 bg-muted/30 p-1 rounded-md">
+          {/* <div className="flex gap-1 bg-muted/30 p-1 rounded-md">
             <Button
               variant={pdfState.sidebarViewMode === 'list' ? 'default' : 'ghost'}
               size="icon"
@@ -291,9 +318,9 @@ export function EditorToolbar({
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
-          </div>
+          </div> */}
 
-          <Separator orientation="vertical" className="h-6" />
+          {/* <Separator orientation="vertical" className="h-6" />
 
           <Button
             variant="ghost"
@@ -319,9 +346,9 @@ export function EditorToolbar({
             className="h-8 w-8"
           >
             <ChevronRight className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
-          <Separator orientation="vertical" className="h-6" />
+          {/* <Separator orientation="vertical" className="h-6" /> */}
 
           <div className="flex items-center gap-2 min-w-[150px]">
             <span className="text-xs text-muted-foreground w-12 text-right">
@@ -337,18 +364,7 @@ export function EditorToolbar({
             />
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
-
-          <Button
-            variant={pdfState.isGridOpen ? "default" : "ghost"}
-            size="sm"
-            onClick={() => onPdfStateChange.setIsGridOpen(true)}
-            title="Page Overview"
-          >
-            <LayoutGrid className="h-4 w-4 mr-2" />
-            Overview
-          </Button>
-        </>
+        </div>
       )}
 
       {activeTab === 'editor' && (
