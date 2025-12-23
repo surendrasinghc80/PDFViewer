@@ -17,7 +17,7 @@ import { EditorToolbar } from "./EditorToolbar";
 import { TableControls } from "./TableControls";
 import { ImageToolbar } from "./ImageToolbar";
 import { PDFViewer } from "@/components/pdf/PDFViewer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
 import "./editor.css";
 
@@ -32,6 +32,20 @@ export function DocumentEditor(props: EditorProps = {}) {
   const [activeTab, setActiveTab] = useState<string>("editor");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [selectedImagePos, setSelectedImagePos] = useState<number | null>(null);
+
+  // PDF State
+  const [numPages, setNumPages] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [scale, setScale] = useState<number>(1.0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [sidebarViewMode, setSidebarViewMode] = useState<'list' | 'grid'>('list');
+  const [isGridOpen, setIsGridOpen] = useState(false);
+
+  const handlePdfPageChange = (page: number) => {
+    if (page >= 1 && page <= numPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const editor = useEditor({
     extensions: [
@@ -68,19 +82,7 @@ export function DocumentEditor(props: EditorProps = {}) {
         multicolor: true,
       }),
     ],
-    content: initialContent || `
-      <h1>Professional DOCX-Style Editor</h1>
-      <p>This is a fully-featured text editor with A4 page layout simulation. Start typing to experience:</p>
-      <ul>
-        <li><strong>Rich text formatting</strong> - Bold, italic, underline, colors, fonts, and more</li>
-        <li><strong>Tables</strong> - Insert, resize, merge cells, add/delete rows and columns</li>
-        <li><strong>Hyperlinks</strong> - Add clickable links to any text</li>
-        <li><strong>Keyboard shortcuts</strong> - All standard shortcuts work (Ctrl+B, Ctrl+I, Ctrl+Z, etc.)</li>
-        <li><strong>Lists &amp; Headings</strong> - Organize content with bullets, numbers, and heading levels</li>
-      </ul>
-      <p>Try using the toolbar above or keyboard shortcuts to format your text. Click the table button to insert a table.</p>
-      <h2>Sample Table</h2>
-    `,
+    content: initialContent || `<p>Enter your content here...</p>`,
     editorProps: {
       attributes: {
         class: "editor-content prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none max-w-none",
@@ -105,19 +107,32 @@ export function DocumentEditor(props: EditorProps = {}) {
 
   return (
     <div className="flex flex-col h-screen bg-editor-workspace">
-      <EditorToolbar editor={editor} onPdfUpload={handlePdfUpload} />
+      <EditorToolbar
+        editor={editor}
+        onPdfUpload={handlePdfUpload}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        // PDF Props
+        pdfState={{
+          numPages,
+          currentPage,
+          scale,
+          isSidebarOpen,
+          sidebarViewMode,
+          isGridOpen
+        }}
+        onPdfStateChange={{
+          setNumPages,
+          setCurrentPage: handlePdfPageChange,
+          setScale,
+          setIsSidebarOpen,
+          setSidebarViewMode,
+          setIsGridOpen
+        }}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="border-b border-toolbar-border bg-toolbar-bg px-4">
-          <TabsList className="h-12 bg-transparent">
-            <TabsTrigger value="editor" className="data-[state=active]:bg-toolbar-active">
-              Editor
-            </TabsTrigger>
-            <TabsTrigger value="pdf" className="data-[state=active]:bg-toolbar-active">
-              PDF Viewer
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        {/* Tab triggers moved to toolbar */}
 
         <TabsContent value="editor" className="flex-1 overflow-auto py-8 m-0">
           <ImageToolbar editor={editor} imagePos={selectedImagePos} />
@@ -130,7 +145,21 @@ export function DocumentEditor(props: EditorProps = {}) {
         </TabsContent>
 
         <TabsContent value="pdf" className="flex-1 overflow-hidden h-full m-0 p-0">
-          <PDFViewer file={pdfFile} />
+          <TabsContent value="pdf" className="flex-1 overflow-hidden h-full m-0 p-0">
+            <PDFViewer
+              file={pdfFile}
+              numPages={numPages}
+              currentPage={currentPage}
+              scale={scale}
+              isSidebarOpen={isSidebarOpen}
+              sidebarViewMode={sidebarViewMode}
+              isGridOpen={isGridOpen}
+              onNumPagesChange={setNumPages}
+              onPageChange={handlePdfPageChange}
+              onSidebarViewModeChange={setSidebarViewMode}
+              onGridOpenChange={setIsGridOpen}
+            />
+          </TabsContent>
         </TabsContent>
       </Tabs>
     </div>

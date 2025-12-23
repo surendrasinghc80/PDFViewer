@@ -6,12 +6,13 @@ interface PDFThumbnailProps {
     isActive: boolean;
     onClick: (pageNum: number) => void;
     file: string | File | null;
+    width?: number;
 }
 
-export const PDFThumbnail = ({ pageNumber, isActive, onClick, file }: PDFThumbnailProps) => {
+export const PDFThumbnail = ({ pageNumber, isActive, onClick, file, width = 150 }: PDFThumbnailProps) => {
     return (
         <div
-            className={`pdf-thumbnail cursor-pointer transition-all ${isActive
+            className={`pdf-thumbnail cursor-pointer transition-all flex justify-center p-2 ${isActive
                 ? 'ring-2 ring-primary bg-accent/20'
                 : 'hover:bg-accent/10'
                 }`}
@@ -20,7 +21,7 @@ export const PDFThumbnail = ({ pageNumber, isActive, onClick, file }: PDFThumbna
             <div className="relative">
                 <Page
                     pageNumber={pageNumber}
-                    scale={0.2} // Low resolution for thumbnails
+                    width={width}
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
                     loading={

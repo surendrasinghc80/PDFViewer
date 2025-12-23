@@ -1,5 +1,9 @@
-import { Editor } from "@tiptap/react";
 import {
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  LayoutList,
+  PanelLeftDashed,
   Bold,
   Italic,
   Underline,
@@ -35,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import {
   Popover,
@@ -51,7 +56,25 @@ import html2pdf from "html2pdf.js";
 
 interface EditorToolbarProps {
   editor: any; // Using any temporarily to avoid deep typing issues with Tiptap extensions
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
   onPdfUpload?: (file: File) => void;
+  pdfState?: {
+    numPages: number;
+    currentPage: number;
+    scale: number;
+    isSidebarOpen: boolean;
+    sidebarViewMode: 'list' | 'grid';
+    isGridOpen: boolean;
+  };
+  onPdfStateChange?: {
+    setNumPages: (n: number) => void;
+    setCurrentPage: (n: number) => void;
+    setScale: (n: number) => void;
+    setIsSidebarOpen: (b: boolean) => void;
+    setSidebarViewMode: (m: 'list' | 'grid') => void;
+    setIsGridOpen: (b: boolean) => void;
+  };
 }
 
 const fontFamilies = [
@@ -81,7 +104,14 @@ const colors = [
   "#0088ff", "#88ff00", "#ff0088", "#00ff88", "#888888",
 ];
 
-export function EditorToolbar({ editor, onPdfUpload }: EditorToolbarProps) {
+export function EditorToolbar({
+  editor,
+  activeTab = 'editor',
+  onTabChange,
+  onPdfUpload,
+  pdfState,
+  onPdfStateChange
+}: EditorToolbarProps) {
   const [linkUrl, setLinkUrl] = useState("");
   const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
   const [isTablePopoverOpen, setIsTablePopoverOpen] = useState(false);
@@ -182,7 +212,28 @@ export function EditorToolbar({ editor, onPdfUpload }: EditorToolbarProps) {
   };
 
   return (
-    <div className="bg-toolbar-bg border-b border-toolbar-border p-2 flex flex-wrap items-center gap-1">
+    <div className="bg-toolbar-bg border-b border-toolbar-border p-2 flex flex-wrap items-center gap-1 sticky top-0 z-50">
+      {/* View Toggles */}
+      <div className="flex gap-1 mr-2 bg-muted/30 p-1 rounded-md">
+        <Button
+          variant={activeTab === 'editor' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onTabChange?.('editor')}
+          className="h-8 text-xs font-medium"
+        >
+          Editor
+        </Button>
+        <Button
+          variant={activeTab === 'pdf' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onTabChange?.('pdf')}
+          className="h-8 text-xs font-medium"
+        >
+          PDF
+        </Button>
+      </div>
+
+      <Separator orientation="vertical" className="h-6" />
       {/* Dark Mode Toggle */}
       <Button
         variant="ghost"
@@ -193,399 +244,499 @@ export function EditorToolbar({ editor, onPdfUpload }: EditorToolbarProps) {
         {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       </Button>
 
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Undo/Redo */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().undo()}
-        className="h-8 w-8"
-      >
-        <Undo className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().redo()}
-        className="h-8 w-8"
-      >
-        <Redo className="h-4 w-4" />
+      <Button variant="ghost" size="icon" className="h-8 w-8 relative" title="Upload PDF">
+        <FileType className="h-4 w-4" />
+        <input
+          type="file"
+          accept=".pdf,application/pdf"
+          className="absolute inset-0 opacity-0 cursor-pointer"
+          onChange={handlePdfUpload}
+          title="Upload PDF"
+        />
       </Button>
 
       <Separator orientation="vertical" className="h-6" />
-
-      {/* Font Family */}
-      <Select
-        value={editor.getAttributes("textStyle").fontFamily || "Arial, sans-serif"}
-        onValueChange={(value) => editor.chain().focus().setFontFamily(value).run()}
-      >
-        <SelectTrigger className="h-8 w-[140px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {fontFamilies.map((font) => (
-            <SelectItem key={font.value} value={font.value}>
-              {font.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Font Size */}
-      <Select
-        value={editor.getAttributes("textStyle").fontSize?.replace("px", "") || "16"}
-        onValueChange={(value) => editor.chain().focus().setFontSize(`${value}px`).run()}
-      >
-        <SelectTrigger className="h-8 w-[70px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {fontSizes.map((size) => (
-            <SelectItem key={size} value={size}>
-              {size}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Heading Level */}
-      <Select
-        value={
-          editor.isActive("heading", { level: 1 }) ? "1" :
-            editor.isActive("heading", { level: 2 }) ? "2" :
-              editor.isActive("heading", { level: 3 }) ? "3" :
-                editor.isActive("heading", { level: 4 }) ? "4" :
-                  editor.isActive("heading", { level: 5 }) ? "5" :
-                    editor.isActive("heading", { level: 6 }) ? "6" : "p"
-        }
-        onValueChange={(value) => {
-          if (value === "p") {
-            editor.chain().focus().setParagraph().run();
-          } else {
-            editor.chain().focus().setHeading({ level: parseInt(value) as 1 | 2 | 3 | 4 | 5 | 6 }).run();
-          }
-        }}
-      >
-        <SelectTrigger className="h-8 w-[120px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {headings.map((heading) => (
-            <SelectItem key={heading.value} value={heading.value}>
-              {heading.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
       <Separator orientation="vertical" className="h-6" />
 
-      {/* Text Formatting */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        data-active={editor.isActive("bold")}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <Bold className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        data-active={editor.isActive("italic")}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <Italic className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        data-active={editor.isActive("underline")}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <Underline className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        data-active={editor.isActive("strike")}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <Strikethrough className="h-4 w-4" />
-      </Button>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Text Color */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Palette className="h-4 w-4" />
+      {activeTab === 'pdf' && pdfState && onPdfStateChange && (
+        <>
+          <Button
+            variant={pdfState.isSidebarOpen ? "default" : "ghost"}
+            size="icon"
+            onClick={() => onPdfStateChange.setIsSidebarOpen(!pdfState.isSidebarOpen)}
+            className="h-8 w-8"
+            title="Toggle Sidebar"
+          >
+            <PanelLeftDashed className="h-4 w-4" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-2">
-          <div className="flex flex-wrap gap-1 w-[200px]">
-            {colors.map((color) => (
-              <button
-                key={color}
-                className="h-6 w-6 rounded border hover:scale-110 transition-transform"
-                style={{ backgroundColor: color }}
-                onClick={() => editor.chain().focus().setColor(color).run()}
-              />
-            ))}
+
+          <Separator orientation="vertical" className="h-6" />
+
+          <div className="flex gap-1 bg-muted/30 p-1 rounded-md">
+            <Button
+              variant={pdfState.sidebarViewMode === 'list' ? 'default' : 'ghost'}
+              size="icon"
+              onClick={() => onPdfStateChange.setSidebarViewMode('list')}
+              className="h-7 w-7"
+              title="Sidebar List View"
+            >
+              <LayoutList className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={pdfState.sidebarViewMode === 'grid' ? 'default' : 'ghost'}
+              size="icon"
+              onClick={() => onPdfStateChange.setSidebarViewMode('grid')}
+              className="h-7 w-7"
+              title="Sidebar Grid View"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
           </div>
-        </PopoverContent>
-      </Popover>
 
-      {/* Background Color */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Highlighter className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-2">
-          <div className="flex flex-wrap gap-1 w-[200px]">
-            {colors.map((color) => (
-              <button
-                key={color}
-                className="h-6 w-6 rounded border hover:scale-110 transition-transform"
-                style={{ backgroundColor: color }}
-                onClick={() => editor.chain().focus().toggleHighlight({ color }).run()}
-              />
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+          <Separator orientation="vertical" className="h-6" />
 
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Alignment */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().setTextAlign("left").run()}
-        data-active={editor.isActive({ textAlign: "left" })}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <AlignLeft className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().setTextAlign("center").run()}
-        data-active={editor.isActive({ textAlign: "center" })}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <AlignCenter className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().setTextAlign("right").run()}
-        data-active={editor.isActive({ textAlign: "right" })}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <AlignRight className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-        data-active={editor.isActive({ textAlign: "justify" })}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <AlignJustify className="h-4 w-4" />
-      </Button>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Lists */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        data-active={editor.isActive("bulletList")}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <List className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        data-active={editor.isActive("orderedList")}
-        className="h-8 w-8 data-[active=true]:bg-toolbar-active"
-      >
-        <ListOrdered className="h-4 w-4" />
-      </Button>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Link */}
-      <Popover open={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
-        <PopoverTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            data-active={editor.isActive("link")}
+            disabled={pdfState.currentPage <= 1}
+            onClick={() => onPdfStateChange.setCurrentPage(pdfState.currentPage - 1)}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium w-16 text-center">
+              {pdfState.currentPage} / {pdfState.numPages}
+            </span>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={pdfState.currentPage >= pdfState.numPages}
+            onClick={() => onPdfStateChange.setCurrentPage(pdfState.currentPage + 1)}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          <div className="flex items-center gap-2 min-w-[150px]">
+            <span className="text-xs text-muted-foreground w-12 text-right">
+              {Math.round(pdfState.scale * 100)}%
+            </span>
+            <Slider
+              value={[pdfState.scale]}
+              min={0.5}
+              max={3.0}
+              step={0.1}
+              onValueChange={(value) => onPdfStateChange.setScale(value[0])}
+              className="w-[100px]"
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          <Button
+            variant={pdfState.isGridOpen ? "default" : "ghost"}
+            size="sm"
+            onClick={() => onPdfStateChange.setIsGridOpen(true)}
+            title="Page Overview"
+          >
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Overview
+          </Button>
+        </>
+      )}
+
+      {activeTab === 'editor' && (
+        <>
+
+          {/* Undo/Redo */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+            className="h-8 w-8"
+          >
+            <Undo className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+            className="h-8 w-8"
+          >
+            <Redo className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Font Family */}
+          <Select
+            value={editor.getAttributes("textStyle").fontFamily || "Arial, sans-serif"}
+            onValueChange={(value) => editor.chain().focus().setFontFamily(value).run()}
+          >
+            <SelectTrigger className="h-8 w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {fontFamilies.map((font) => (
+                <SelectItem key={font.value} value={font.value}>
+                  {font.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Font Size */}
+          <Select
+            value={editor.getAttributes("textStyle").fontSize?.replace("px", "") || "16"}
+            onValueChange={(value) => editor.chain().focus().setFontSize(`${value}px`).run()}
+          >
+            <SelectTrigger className="h-8 w-[70px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {fontSizes.map((size) => (
+                <SelectItem key={size} value={size}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Heading Level */}
+          <Select
+            value={
+              editor.isActive("heading", { level: 1 }) ? "1" :
+                editor.isActive("heading", { level: 2 }) ? "2" :
+                  editor.isActive("heading", { level: 3 }) ? "3" :
+                    editor.isActive("heading", { level: 4 }) ? "4" :
+                      editor.isActive("heading", { level: 5 }) ? "5" :
+                        editor.isActive("heading", { level: 6 }) ? "6" : "p"
+            }
+            onValueChange={(value) => {
+              if (value === "p") {
+                editor.chain().focus().setParagraph().run();
+              } else {
+                editor.chain().focus().setHeading({ level: parseInt(value) as 1 | 2 | 3 | 4 | 5 | 6 }).run();
+              }
+            }}
+          >
+            <SelectTrigger className="h-8 w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {headings.map((heading) => (
+                <SelectItem key={heading.value} value={heading.value}>
+                  {heading.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Text Formatting */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            data-active={editor.isActive("bold")}
             className="h-8 w-8 data-[active=true]:bg-toolbar-active"
           >
-            <LinkIcon className="h-4 w-4" />
+            <Bold className="h-4 w-4" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="url">URL</Label>
-              <Input
-                id="url"
-                placeholder="https://example.com"
-                value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setLink();
-                  }
-                }}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={setLink} size="sm">
-                Set Link
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            data-active={editor.isActive("italic")}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            data-active={editor.isActive("underline")}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <Underline className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            data-active={editor.isActive("strike")}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <Strikethrough className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Text Color */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Palette className="h-4 w-4" />
               </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+              <div className="flex flex-wrap gap-1 w-[200px]">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    className="h-6 w-6 rounded border hover:scale-110 transition-transform"
+                    style={{ backgroundColor: color }}
+                    onClick={() => editor.chain().focus().setColor(color).run()}
+                  />
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Background Color */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Highlighter className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+              <div className="flex flex-wrap gap-1 w-[200px]">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    className="h-6 w-6 rounded border hover:scale-110 transition-transform"
+                    style={{ backgroundColor: color }}
+                    onClick={() => editor.chain().focus().toggleHighlight({ color }).run()}
+                  />
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Alignment */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            data-active={editor.isActive({ textAlign: "left" })}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <AlignLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            data-active={editor.isActive({ textAlign: "center" })}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <AlignCenter className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            data-active={editor.isActive({ textAlign: "right" })}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <AlignRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+            data-active={editor.isActive({ textAlign: "justify" })}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <AlignJustify className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Lists */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            data-active={editor.isActive("bulletList")}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            data-active={editor.isActive("orderedList")}
+            className="h-8 w-8 data-[active=true]:bg-toolbar-active"
+          >
+            <ListOrdered className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Link */}
+          <Popover open={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
+            <PopoverTrigger asChild>
               <Button
-                onClick={() => {
-                  editor.chain().focus().unsetLink().run();
-                  setIsLinkPopoverOpen(false);
-                }}
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon"
+                data-active={editor.isActive("link")}
+                className="h-8 w-8 data-[active=true]:bg-toolbar-active"
               >
-                Remove Link
+                <LinkIcon className="h-4 w-4" />
               </Button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="url">URL</Label>
+                  <Input
+                    id="url"
+                    placeholder="https://example.com"
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setLink();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={setLink} size="sm">
+                    Set Link
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      editor.chain().focus().unsetLink().run();
+                      setIsLinkPopoverOpen(false);
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Remove Link
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
 
-      {/* Table */}
-      <Popover open={isTablePopoverOpen} onOpenChange={setIsTablePopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Table className="h-4 w-4" />
+          {/* Table */}
+          <Popover open={isTablePopoverOpen} onOpenChange={setIsTablePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Table className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rows">Rows</Label>
+                  <Input
+                    id="rows"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={tableRows}
+                    onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cols">Columns</Label>
+                  <Input
+                    id="cols"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={tableCols}
+                    onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <Button onClick={insertTable} className="w-full">
+                  Insert Table
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Horizontal Rule */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            className="h-8 w-8"
+          >
+            <Minus className="h-4 w-4" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="rows">Rows</Label>
-              <Input
-                id="rows"
-                type="number"
-                min="1"
-                max="20"
-                value={tableRows}
-                onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Image */}
+          <Popover open={isImagePopoverOpen} onOpenChange={setIsImagePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ImageIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Input
+                    id="imageUrl"
+                    placeholder="https://example.com/image.png"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Or Upload</Label>
+                  <Input type="file" accept="image/*" onChange={handleImageUpload} />
+                </div>
+                <Button onClick={addImage} className="w-full">
+                  Insert Image
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Import/Export */}
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8 relative">
+              <FileUp className="h-4 w-4" />
+              <input
+                type="file"
+                accept=".docx"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={importDocx}
+                title="Import DOCX"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cols">Columns</Label>
-              <Input
-                id="cols"
-                type="number"
-                min="1"
-                max="10"
-                value={tableCols}
-                onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
-              />
-            </div>
-            <Button onClick={insertTable} className="w-full">
-              Insert Table
+            </Button>
+            <Button variant="ghost" size="icon" onClick={exportDocx} className="h-8 w-8" title="Export DOCX">
+              <FileDown className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={exportPdf} className="h-8 w-8" title="Export PDF">
+              <FileText className="h-4 w-4" />
             </Button>
           </div>
-        </PopoverContent>
-      </Popover>
-
-      {/* Horizontal Rule */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        className="h-8 w-8"
-      >
-        <Minus className="h-4 w-4" />
-      </Button>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Image */}
-      <Popover open={isImagePopoverOpen} onOpenChange={setIsImagePopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ImageIcon className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="imageUrl">Image URL</Label>
-              <Input
-                id="imageUrl"
-                placeholder="https://example.com/image.png"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Or Upload</Label>
-              <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            </div>
-            <Button onClick={addImage} className="w-full">
-              Insert Image
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Import/Export */}
-      <div className="flex gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-          <FileUp className="h-4 w-4" />
-          <input
-            type="file"
-            accept=".docx"
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            onChange={importDocx}
-            title="Import DOCX"
-          />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={exportDocx} className="h-8 w-8" title="Export DOCX">
-          <FileDown className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={exportPdf} className="h-8 w-8" title="Export PDF">
-          <FileText className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative" title="Upload PDF">
-          <FileType className="h-4 w-4" />
-          <input
-            type="file"
-            accept=".pdf,application/pdf"
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            onChange={handlePdfUpload}
-            title="Upload PDF"
-          />
-        </Button>
-      </div>
+        </>
+      )}
     </div>
   );
 }
