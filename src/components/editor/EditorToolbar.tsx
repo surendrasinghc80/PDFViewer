@@ -23,6 +23,9 @@ import {
   Minus,
   Moon,
   Sun,
+  ZoomIn,
+  Search,
+  ZoomOut,
 } from "lucide-react";
 import {
   Image as ImageIcon,
@@ -40,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 import { Separator } from "@/components/ui/separator";
 import {
   Popover,
@@ -48,11 +52,12 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTheme } from "next-themes";
 import * as mammoth from "mammoth";
 // @ts-ignore
 import html2pdf from "html2pdf.js";
+import { cn } from "@/lib/utils";
 
 interface EditorToolbarProps {
   editor: any; // Using any temporarily to avoid deep typing issues with Tiptap extensions
@@ -104,6 +109,74 @@ const colors = [
   "#0088ff", "#88ff00", "#ff0088", "#00ff88", "#888888",
 ];
 
+const ZoomSlider = ({ scale, onScaleChange, className }: { scale: number; onScaleChange: (val: number) => void; className?: string }) => {
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  const ZoomIcon = React.useCallback(() => {
+    if (scale < 0.8) return <ZoomOut className="w-4 h-4" />;
+    if (scale > 1.5) return <ZoomIn className="h-4 w-4" />;
+    return <Search className="h-4 w-4" />;
+  }, [scale]);
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 px-3 py-1.5 rounded-xl bg-card border border-border shadow-soft",
+        "transition-all duration-300 ease-out",
+        isDragging && "shadow-medium scale-[1.01]",
+        className
+      )}
+    >
+      <button
+        onClick={() => onScaleChange(1.0)}
+        className={cn(
+          "flex items-center justify-center w-8 h-8 rounded-lg",
+          "bg-secondary text-foreground",
+          "transition-all duration-200 ease-out",
+          "hover:bg-muted hover:scale-105",
+          "active:scale-95",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        )}
+        title="Reset Zoom (100%)"
+      >
+        <ZoomIcon />
+      </button>
+
+      <div className="flex items-center gap-3 min-w-[220px]">
+        <SliderPrimitive.Root
+          className="relative flex items-center select-none touch-none w-full h-8 cursor-pointer"
+          value={[scale]}
+          onValueChange={(val) => onScaleChange(val[0])}
+          onPointerDown={() => setIsDragging(true)}
+          onPointerUp={() => setIsDragging(false)}
+          min={0.5}
+          max={3.0}
+          step={0.1}
+          aria-label="Zoom"
+        >
+          <SliderPrimitive.Track
+            className={cn(
+              "relative grow rounded-full h-1.5 bg-slider-track",
+              "transition-all duration-200"
+            )}
+          >
+            <SliderPrimitive.Range
+              className={cn(
+                "absolute h-full rounded-full bg-slider-track-active",
+                "transition-all duration-150"
+              )}
+            />
+          </SliderPrimitive.Track>
+          {/* <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" /> */}
+        </SliderPrimitive.Root>
+        <span className="text-xs font-medium text-muted-foreground w-10 tabular-nums">
+          {Math.round(scale * 100)}%
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export function EditorToolbar({
   editor,
   activeTab = 'editor',
@@ -112,15 +185,15 @@ export function EditorToolbar({
   pdfState,
   onPdfStateChange
 }: EditorToolbarProps) {
-  const [linkUrl, setLinkUrl] = useState("");
-  const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
-  const [isTablePopoverOpen, setIsTablePopoverOpen] = useState(false);
-  const [tableRows, setTableRows] = useState(3);
-  const [tableCols, setTableCols] = useState(3);
+  const [linkUrl, setLinkUrl] = React.useState("");
+  const [isLinkPopoverOpen, setIsLinkPopoverOpen] = React.useState(false);
+  const [isTablePopoverOpen, setIsTablePopoverOpen] = React.useState(false);
+  const [tableRows, setTableRows] = React.useState(3);
+  const [tableCols, setTableCols] = React.useState(3);
   const { theme, setTheme } = useTheme();
 
-  const [imageUrl, setImageUrl] = useState("");
-  const [isImagePopoverOpen, setIsImagePopoverOpen] = useState(false);
+  const [imageUrl, setImageUrl] = React.useState("");
+  const [isImagePopoverOpen, setIsImagePopoverOpen] = React.useState(false);
 
   if (!editor) {
     return null;
@@ -276,6 +349,19 @@ export function EditorToolbar({
       {activeTab === 'pdf' && pdfState && onPdfStateChange && (
         <div className="flex items-center justify-center gap-1" >
 
+          <Separator orientation="vertical" className="h-6" />
+          <Button
+            variant={pdfState.isSidebarOpen ? "default" : "ghost"}
+            size="icon"
+            onClick={() => onPdfStateChange.setIsSidebarOpen(!pdfState.isSidebarOpen)}
+            className="h-8 w-8"
+            title="Toggle Sidebar"
+          >
+            <PanelLeftDashed className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
           <Button
             variant={pdfState.isGridOpen ? "default" : "ghost"}
             size="sm"
@@ -286,17 +372,7 @@ export function EditorToolbar({
             Overview
           </Button>
 
-          <Separator orientation="vertical" className="h-6" />
 
-          {/* <Button
-            variant={pdfState.isSidebarOpen ? "default" : "ghost"}
-            size="icon"
-            onClick={() => onPdfStateChange.setIsSidebarOpen(!pdfState.isSidebarOpen)}
-            className="h-8 w-8"
-            title="Toggle Sidebar"
-          >
-            <PanelLeftDashed className="h-4 w-4" />
-          </Button> */}
           {/* <Separator orientation="vertical" className="h-6" /> */}
 
           {/* <div className="flex gap-1 bg-muted/30 p-1 rounded-md">
@@ -350,19 +426,11 @@ export function EditorToolbar({
 
           {/* <Separator orientation="vertical" className="h-6" /> */}
 
-          <div className="flex items-center gap-2 min-w-[150px]">
-            <span className="text-xs text-muted-foreground w-12 text-right">
-              {Math.round(pdfState.scale * 100)}%
-            </span>
-            <Slider
-              value={[pdfState.scale]}
-              min={0.5}
-              max={3.0}
-              step={0.1}
-              onValueChange={(value) => onPdfStateChange.setScale(value[0])}
-              className="w-[100px]"
-            />
-          </div>
+          <ZoomSlider
+            scale={pdfState.scale}
+            onScaleChange={(value) => onPdfStateChange.setScale(value)}
+            className="ml-auto"
+          />
 
         </div>
       )}

@@ -157,6 +157,7 @@ export function DocumentEditor(props: EditorProps = {}) {
             onPageChange={handlePdfPageChange}
             onSidebarViewModeChange={setSidebarViewMode}
             onGridOpenChange={setIsGridOpen}
+            onSidebarOpenChange={setIsSidebarOpen}
           />
         </TabsContent>
       </Tabs>

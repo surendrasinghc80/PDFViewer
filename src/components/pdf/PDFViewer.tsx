@@ -4,6 +4,8 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './pdf.css';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import { PDFSidebar } from './PDFSidebar';
 
 // Set worker source
@@ -22,6 +24,7 @@ interface PDFViewerProps {
     onSidebarViewModeChange: (m: 'list' | 'grid') => void;
     onGridOpenChange: (b: boolean) => void;
     className?: string;
+    onSidebarOpenChange?: (open: boolean) => void;
 }
 
 export const PDFViewer = ({
@@ -36,7 +39,8 @@ export const PDFViewer = ({
     onPageChange,
     onSidebarViewModeChange,
     onGridOpenChange,
-    className = ""
+    className = "",
+    onSidebarOpenChange
 }: PDFViewerProps) => {
     // Internal state removed, using props
     const [pageInput, setPageInput] = useState<string>('1');
@@ -76,7 +80,11 @@ export const PDFViewer = ({
     }
 
     return (
-        <div className={`pdf-viewer-container flex h-full bg-background ${className}`}>
+        <SidebarProvider
+            className={`pdf-viewer-container flex h-full bg-background ${className}`}
+            open={isSidebarOpen}
+            onOpenChange={onSidebarOpenChange}
+        >
             {file ? (
                 <Document
                     file={file}
@@ -99,97 +107,97 @@ export const PDFViewer = ({
                         </div>
                     }
                 >
-                    {/* Left Sidebar - Collapsible with Animation */}
-                    <div
-                        className={`transition-[width] duration-300 ease-in-out border-r border-border bg-background shrink-0 overflow-hidden ${isSidebarOpen ? 'w-64' : 'w-0'}`}
-                    >
-                        <div className="w-64 h-screen">
-                            {/* Fixed width inner container prevents content reflow during width transition */}
-                            <PDFSidebar
-                                file={file}
-                                numPages={numPages}
-                                currentPage={currentPage}
-                                onPageSelect={goToPage}
-                                viewMode={sidebarViewMode}
-                                className="border-r-0"
-                            />
-                        </div>
-                    </div>
+                    <PDFSidebar
+                        file={file}
+                        numPages={numPages}
+                        currentPage={currentPage}
+                        onPageSelect={goToPage}
+                        viewMode={sidebarViewMode}
+                        className="border-r"
+                    />
 
-                    {/* Grid Overview Dialog */}
-                    <Dialog open={isGridOpen} onOpenChange={onGridOpenChange}>
-                        {/* Trigger controlled via prop */}
-                        <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
-                            <DialogHeader>
-                                <DialogTitle>Page Overview ({numPages} pages)</DialogTitle>
-                            </DialogHeader>
-                            <div className="flex-1 overflow-y-auto p-4 min-h-0">
-                                <div className="grid grid-cols-4 gap-4">
-                                    {Array.from({ length: numPages }, (_, index) => {
-                                        const thumbPage = index + 1;
-                                        return (
-                                            <div
-                                                key={`grid-${thumbPage}`}
-                                                className={`cursor-pointer border-2 rounded hover:border-primary transition-all p-1 ${currentPage === thumbPage ? 'border-primary ring-2 ring-primary/20' : 'border-border'
-                                                    }`}
-                                                onClick={() => {
-                                                    goToPage(thumbPage);
-                                                    onGridOpenChange(false);
-                                                }}
-                                            >
-                                                <Page
-                                                    pageNumber={thumbPage}
-                                                    width={150}
-                                                    renderTextLayer={false}
-                                                    renderAnnotationLayer={false}
-                                                />
-                                                <div className="text-center mt-1 text-sm font-medium">
-                                                    Page {thumbPage}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                    <SidebarInset className="flex flex-col h-full overflow-hidden bg-muted/30">
+                        {/* Header with Trigger */}
+                        <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-background px-4 sticky top-0 z-20">
+                            <SidebarTrigger />
+                            <Separator orientation="vertical" className="mr-2 h-4" />
+                            <span className="text-sm font-medium">PDF Viewer</span>
+                        </header>
+
+                        <div className="flex-1 flex flex-col min-w-0 bg-muted/30 h-full overflow-hidden relative">
+                            {/* Grid Overview Dialog */}
+                            <Dialog open={isGridOpen} onOpenChange={onGridOpenChange}>
+                                <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+                                    <DialogHeader>
+                                        <DialogTitle>Page Overview ({numPages} pages)</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="flex-1 overflow-y-auto p-4 min-h-0">
+                                        <div className="grid grid-cols-4 gap-4">
+                                            {Array.from({ length: numPages }, (_, index) => {
+                                                const thumbPage = index + 1;
+                                                return (
+                                                    <div
+                                                        key={`grid-${thumbPage}`}
+                                                        className={`cursor-pointer border-2 rounded hover:border-primary transition-all p-1 ${currentPage === thumbPage ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
+                                                        onClick={() => {
+                                                            goToPage(thumbPage);
+                                                            onGridOpenChange(false);
+                                                        }}
+                                                    >
+                                                        <Page
+                                                            pageNumber={thumbPage}
+                                                            width={150}
+                                                            renderTextLayer={false}
+                                                            renderAnnotationLayer={false}
+                                                        />
+                                                        <div className="text-center mt-1 text-sm font-medium">
+                                                            Page {thumbPage}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+
+                            {/* Main Viewer - Scrollable Independent */}
+                            <div className="flex-1 flex flex-col min-w-0 bg-muted/30 h-full overflow-hidden">
+                                {/* PDF Document Area - Scrollable */}
+                                <div className="flex-1 overflow-auto flex flex-col items-center p-8 bg-muted/30 gap-8 h-full">
+                                    {Array.from(new Array(numPages), (el, index) => (
+                                        <div
+                                            key={`page_${index + 1}`}
+                                            id={`pdf-page-${index + 1}`}
+                                            className="pdf-page-container shadow-lg transition-transform duration-200"
+                                            style={{ transformOrigin: 'top center' }}
+                                        >
+                                            <Page
+                                                pageNumber={index + 1}
+                                                scale={scale}
+                                                renderTextLayer={true}
+                                                renderAnnotationLayer={true}
+                                                className="bg-white"
+                                                loading={
+                                                    <div className="flex items-center justify-center h-[800px] w-[600px] bg-white">
+                                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                                                    </div>
+                                                }
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </DialogContent>
-                    </Dialog>
-
-                    {/* Main Viewer - Scrollable Independent */}
-                    <div className="flex-1 flex flex-col min-w-0 bg-muted/30 h-full overflow-hidden">
-                        {/* Top Controls - Removed/Moved to EditorToolbar */}
-
-                        {/* PDF Document Area - Scrollable */}
-                        <div className="flex-1 overflow-auto flex flex-col items-center p-8 bg-muted/30 gap-8">
-                            {Array.from(new Array(numPages), (el, index) => (
-                                <div
-                                    key={`page_${index + 1}`}
-                                    id={`pdf-page-${index + 1}`}
-                                    className="pdf-page-container shadow-lg transition-transform duration-200"
-                                    style={{ transformOrigin: 'top center' }}
-                                >
-                                    <Page
-                                        pageNumber={index + 1}
-                                        scale={scale}
-                                        renderTextLayer={true}
-                                        renderAnnotationLayer={true}
-                                        className="bg-white"
-                                        loading={
-                                            <div className="flex items-center justify-center h-[800px] w-[600px] bg-white">
-                                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                                            </div>
-                                        }
-                                    />
-                                </div>
-                            ))}
                         </div>
-                    </div>
+                    </SidebarInset>
                 </Document>
             ) : (
-                <div className="flex flex-col items-center justify-center flex-1 p-12">
+                <div className="flex flex-col items-center justify-center flex-1 p-12 w-full">
                     <p className="text-lg text-muted-foreground mb-2">No PDF file selected</p>
                     <p className="text-sm text-muted-foreground">Upload a PDF using the toolbar button</p>
                 </div>
             )}
-        </div>
+        </SidebarProvider>
     );
 };
+

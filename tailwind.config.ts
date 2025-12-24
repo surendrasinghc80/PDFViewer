@@ -67,6 +67,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "slider-track": "hsl(var(--secondary))",
+        "slider-track-active": "hsl(var(--primary))",
+      },
+      boxShadow: {
+        "soft": "0 2px 10px rgba(0, 0, 0, 0.05)",
+        "medium": "0 5px 15px rgba(0, 0, 0, 0.1)",
       },
       borderRadius: {
         lg: "var(--radius)",
