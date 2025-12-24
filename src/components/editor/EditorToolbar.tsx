@@ -121,9 +121,9 @@ const ZoomSlider = ({ scale, onScaleChange, className }: { scale: number; onScal
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-3 py-1.5 rounded-xl bg-card border border-border shadow-soft",
+        "flex items-center gap-3 px-3 py-1.5 ",
         "transition-all duration-300 ease-out",
-        isDragging && "shadow-medium scale-[1.01]",
+        isDragging && "scale-[1.01]",
         className
       )}
     >
