@@ -2,6 +2,18 @@
   "name": "pagemaster-editor",
   "private": false,
   "version": "0.1.0",
+  "description": "A powerful, DOCX-style rich text editor and PDF viewer for React applications.",
+  "keywords": [
+    "react",
+    "editor",
+    "tiptap",
+    "docx",
+    "pdf",
+    "wysiwyg",
+    "rich-text"
+  ],
+  "author": "Surendra Singh",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/pagemaster-editor.umd.cjs",
   "module": "./dist/pagemaster-editor.js",
@@ -21,6 +33,10 @@
     "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
