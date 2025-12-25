@@ -48,6 +48,7 @@ export function DocumentEditor(props: EditorProps = {}) {
   };
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         // Disable extensions that might conflict or that we configure separately
