@@ -190,7 +190,9 @@ export function EditorToolbar({
   const [isTablePopoverOpen, setIsTablePopoverOpen] = React.useState(false);
   const [tableRows, setTableRows] = React.useState(3);
   const [tableCols, setTableCols] = React.useState(3);
-  const { theme, setTheme } = useTheme();
+  const themeContext = useTheme();
+  const theme = themeContext?.theme;
+  const setTheme = themeContext?.setTheme;
 
   const [imageUrl, setImageUrl] = React.useState("");
   const [isImagePopoverOpen, setIsImagePopoverOpen] = React.useState(false);
@@ -326,7 +328,7 @@ export function EditorToolbar({
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        onClick={() => setTheme?.(theme === "dark" ? "light" : "dark")}
         className="h-8 w-8"
       >
         {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

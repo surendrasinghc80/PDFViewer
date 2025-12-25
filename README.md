@@ -1,6 +1,9 @@
 # PageMaster Editor
 
-A powerful, DOCX-style rich text editor and PDF viewer for React applications. Built with Tiptap, React PDF, and generic document handling libraries.
+A powerful, DOCX-style rich text editor and PDF viewer for React applications. Built with Tiptap, React PDF, and modern styling libraries.
+
+[![NPM Version](https://img.shields.io/npm/v/pagemaster-editor.svg)](https://www.npmjs.com/package/pagemaster-editor)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
@@ -24,14 +27,14 @@ A powerful, DOCX-style rich text editor and PDF viewer for React applications. B
 
 ### 📄 PDF Integration
 - **Integrated Viewer**: Built-in tabbed interface to switch between Editor and PDF viewing modes.
-- **PDF Upload**: Upload PDF files directly from the toolbar.
-- **Advanced Controls**: Zoom (50%-300%), page navigation, and responsive rendering.
+- **PDF Upload**: Upload PDF files directly from the toolbar for convenient viewing and reference.
+- **Advanced Controls**: Zoom (50%-300%), page navigation, sidebars for thumbnails, and responsive rendering.
 
 ### 💾 Import & Export
 - **DOCX Support**: 
   - **Import**: Load existing DOCX files for editing.
-  - **Export**: Generate distinct, browser-compatible DOCX files with improved formatting.
-- **PDF Export**: Export your document content directly to PDF format.
+  - **Export**: Generate high-fidelity DOCX files compatible with Microsoft Word and Google Docs.
+- **PDF Export**: Export your document content directly to PDF format with a single click.
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -56,7 +59,9 @@ npm install pagemaster-editor
 
 ## Usage
 
-### Document Editor with PDF Viewer
+### Basic Usage
+
+Import the component and its baseline styles. Ensure the parent container has a height.
 
 ```tsx
 import { DocumentEditor } from 'pagemaster-editor';
@@ -64,34 +69,84 @@ import 'pagemaster-editor/dist/style.css';
 
 function App() {
   return (
-    <div style={{ height: '100vh' }}>
-      <DocumentEditor />
+    <div style={{ height: '100vh', width: '100vw' }}>
+      <DocumentEditor 
+        initialContent="<h1>Welcome to PageMaster</h1>"
+        onChange={(html) => console.log('Content updated:', html)}
+      />
     </div>
   );
 }
 ```
 
-### PDF Viewer (Standalone)
+### Next.js Integration (SSR)
+
+Since PageMaster Editor uses browser-specific APIs (Canvas, DOM), it must be imported dynamically.
 
 ```tsx
-import { PDFViewer } from 'pagemaster-editor';
+"use client";
+
+import dynamic from 'next/dynamic';
 import 'pagemaster-editor/dist/style.css';
 
-function App() {
-  return (
-    <div style={{ padding: '20px' }}>
-      <PDFViewer file="https://example.com/sample.pdf" />
-    </div>
-  );
+const DocumentEditor = dynamic(
+  () => import('pagemaster-editor').then((mod) => mod.DocumentEditor),
+  { 
+    ssr: false,
+    loading: () => <div>Loading Editor...</div>
+  }
+);
+
+export default function Page() {
+  return <DocumentEditor />;
 }
 ```
+
+### Tailwind CSS Configuration
+
+PageMaster Editor uses Tailwind for styling. To ensure all library styles are properly purged/generated in your project:
+
+#### Tailwind v3 (tailwind.config.js)
+```javascript
+module.exports = {
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/pagemaster-editor/dist/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+#### Tailwind v4 (globals.css)
+```css
+@import "tailwindcss";
+@import "pagemaster-editor/style";
+
+/* Ensure Tailwind scans the library for utility classes */
+@source "../../node_modules/pagemaster-editor/dist/**/*.{js,ts,jsx,tsx}";
+```
+
+## Props
+
+The `DocumentEditor` component accepts the following props:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `initialContent` | `string` | `""` | Initial HTML string to load into the editor. |
+| `className` | `string` | `""` | Additional CSS classes for the outer container. |
+| `onChange` | `(html: string) => void` | `undefined` | Callback function triggered on every content change. |
+| `readOnly` | `boolean` | `false` | If true, the editor is disabled and toolbars are hidden. |
+| `placeholder` | `string` | `"Enter your content here..."` | Text to show when the editor is empty. |
 
 ## Peer Dependencies
 
-Ensure you have the following installed in your project:
-- `react`
-- `react-dom`
+Ensure your project has these dependencies:
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
 
 ## License
 
-MIT
+MIT © [Surendra Singh](https://github.com/surendrasinghc80)

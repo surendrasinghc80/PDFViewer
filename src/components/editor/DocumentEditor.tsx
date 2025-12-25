@@ -1,3 +1,4 @@
+import { Placeholder } from "@tiptap/extension-placeholder";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Table } from "@tiptap/extension-table";
@@ -19,16 +20,20 @@ import { ImageToolbar } from "./ImageToolbar";
 import { PDFViewer } from "@/components/pdf/PDFViewer";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import "./editor.css";
 
 // Define props interface for valid export
 export interface EditorProps {
   initialContent?: string;
   className?: string;
+  onChange?: (html: string) => void;
+  readOnly?: boolean;
+  placeholder?: string;
 }
 
 export function DocumentEditor(props: EditorProps = {}) {
-  const { initialContent, className } = props;
+  const { initialContent, className, onChange, readOnly = false, placeholder = "Enter your content here..." } = props;
   const [activeTab, setActiveTab] = useState<string>("editor");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [selectedImagePos, setSelectedImagePos] = useState<number | null>(null);
@@ -49,10 +54,11 @@ export function DocumentEditor(props: EditorProps = {}) {
 
   const editor = useEditor({
     immediatelyRender: false,
+    editable: !readOnly,
     extensions: [
-      StarterKit.configure({
-        // Disable extensions that might conflict or that we configure separately
-        // history: false, // We often use specific history configuration
+      StarterKit.configure({}),
+      Placeholder.configure({
+        placeholder: placeholder,
       }),
       // Register all required table extensions explicitly
       Table.configure({
@@ -83,11 +89,16 @@ export function DocumentEditor(props: EditorProps = {}) {
         multicolor: true,
       }),
     ],
-    content: initialContent || `<p>Enter your content here...</p>`,
+    content: initialContent || "",
     editorProps: {
       attributes: {
         class: "editor-content prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none max-w-none",
       },
+    },
+    onUpdate: ({ editor }) => {
+      if (onChange) {
+        onChange(editor.getHTML());
+      }
     },
     onSelectionUpdate: ({ editor }) => {
       const { selection } = editor.state;
@@ -107,39 +118,39 @@ export function DocumentEditor(props: EditorProps = {}) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-editor-workspace">
-      <EditorToolbar
-        editor={editor}
-        onPdfUpload={handlePdfUpload}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        // PDF Props
-        pdfState={{
-          numPages,
-          currentPage,
-          scale,
-          isSidebarOpen,
-          sidebarViewMode,
-          isGridOpen
-        }}
-        onPdfStateChange={{
-          setNumPages,
-          setCurrentPage: handlePdfPageChange,
-          setScale,
-          setIsSidebarOpen,
-          setSidebarViewMode,
-          setIsGridOpen
-        }}
-      />
+    <div className={cn("flex flex-col h-screen bg-editor-workspace", className)}>
+      {!readOnly && (
+        <EditorToolbar
+          editor={editor}
+          onPdfUpload={handlePdfUpload}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          // PDF Props
+          pdfState={{
+            numPages,
+            currentPage,
+            scale,
+            isSidebarOpen,
+            sidebarViewMode,
+            isGridOpen
+          }}
+          onPdfStateChange={{
+            setNumPages,
+            setCurrentPage: handlePdfPageChange,
+            setScale,
+            setIsSidebarOpen,
+            setSidebarViewMode,
+            setIsGridOpen
+          }}
+        />
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        {/* Tab triggers moved to toolbar */}
-
         <TabsContent value="editor" className="flex-1 overflow-auto py-8 m-0">
-          <ImageToolbar editor={editor} imagePos={selectedImagePos} />
+          {!readOnly && <ImageToolbar editor={editor} imagePos={selectedImagePos} />}
           <div className="mx-auto space-y-6" style={{ width: "794px" }}>
             <div className="bg-editor-page shadow-lg page-container relative" style={{ minHeight: "1300px", padding: "96px 72px" }}>
-              <TableControls editor={editor} />
+              {!readOnly && <TableControls editor={editor} />}
               <EditorContent editor={editor} />
             </div>
           </div>
