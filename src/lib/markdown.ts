@@ -27,7 +27,7 @@ export function isMarkdown(text: string): boolean {
 /**
  * Converts markdown text to HTML
  */
-export async function markdownToHtml(markdown: string): Promise<string> {
+export function markdownToHtml(markdown: string): string {
     // Configure marked options
     marked.setOptions({
         gfm: true,              // GitHub Flavored Markdown

@@ -5,6 +5,8 @@ A powerful, DOCX-style rich text editor and PDF viewer for React applications. B
 [![NPM Version](https://img.shields.io/npm/v/pagemaster-editor.svg)](https://www.npmjs.com/package/pagemaster-editor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**[🔥 Live Demo](https://pagemaster-demo-app.vercel.app/)**
+
 ## Features
 
 ### 📝 Advanced Document Editor
