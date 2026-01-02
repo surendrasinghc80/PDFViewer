@@ -269,22 +269,70 @@
   border-radius: 0.2em;
 }
 
-/* Page breaks for multi-page layout */
+/* Pages wrapper for multi-page layout */
+/* Page container styling */
+/* Page container styling */
 .page-container {
-  page-break-after: always;
-  break-after: page;
   position: relative;
-  min-height: 1300px !important;
-  /* Removed max-height to allow "adding another page" by simply scrolling */
-  overflow: visible;
+  min-height: 1123px;
+  /* A4 Height */
+  background: white;
+  margin-bottom: 20px;
 
-  /* Visual Page Guides (A4 Height: 1123px) */
+  /* Visual Page Guides at A4 intervals (1123px content height) */
   background-image: linear-gradient(to bottom,
-      transparent calc(1300px - 10px),
-      hsl(var(--border)) calc(1300px - 10px),
-      hsl(var(--border)) 1300px);
-  background-size: 100% 1300px;
+      transparent calc(1123px - 1px),
+      hsl(var(--border)) calc(1123px - 1px),
+      hsl(var(--border)) 1123px);
+  background-size: 100% 1123px;
   background-repeat: repeat-y;
+  background-position: 0 0;
+}
+
+/* Print-specific page breaks */
+@media print {
+  .page-container {
+    box-shadow: none;
+    margin: 0;
+    padding: 0 !important;
+    background-image: none;
+  }
+}
+
+/* Print-specific page breaks */
+@media print {
+  .pages-wrapper {
+    gap: 0;
+    padding: 0;
+  }
+
+  .page-container {
+    page-break-after: always;
+    break-after: page;
+    min-height: 1158px;
+    max-height: 1158px;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+
+  .page-container::before {
+    display: none;
+    /* Hide page numbers in print */
+  }
+
+  /* Avoid breaking elements across pages */
+  .page-container h1,
+  .page-container h2,
+  .page-container h3,
+  .page-container h4,
+  .page-container h5,
+  .page-container h6,
+  .page-container p,
+  .page-container img,
+  .page-container table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
 
 @media screen {
@@ -292,20 +340,9 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
-  /* Page break indicator */
-  .page-container::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: -72px;
-    right: -72px;
-    height: 2px;
-    background: linear-gradient(to right,
-        transparent 0%,
-        hsl(var(--border)) 10%,
-        hsl(var(--border)) 90%,
-        transparent 100%);
-    pointer-events: none;
+  /* Hover effect to highlight current page */
+  .page-container:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 }
 

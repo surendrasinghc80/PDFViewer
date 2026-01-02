@@ -14,6 +14,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { FontFamily } from "@tiptap/extension-font-family";
 import FontSize from "@tiptap/extension-font-size";
 import { CustomImage } from "@/extensions/CustomImage";
+import { MarkdownPaste } from "@/extensions/MarkdownPaste";
 import { EditorToolbar } from "./EditorToolbar";
 import { TableControls } from "./TableControls";
 import { ImageToolbar } from "./ImageToolbar";
@@ -88,6 +89,7 @@ export function DocumentEditor(props: EditorProps = {}) {
       Highlight.configure({
         multicolor: true,
       }),
+      MarkdownPaste,
     ],
     content: initialContent || "",
     editorProps: {
@@ -148,8 +150,8 @@ export function DocumentEditor(props: EditorProps = {}) {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <TabsContent value="editor" className="flex-1 overflow-auto py-8 m-0">
           {!readOnly && <ImageToolbar editor={editor} imagePos={selectedImagePos} />}
-          <div className="mx-auto space-y-6" style={{ width: "794px" }}>
-            <div className="bg-editor-page shadow-lg page-container relative" style={{ minHeight: "1300px", padding: "96px 72px" }}>
+          <div className="mx-auto" style={{ width: "794px" }}>
+            <div className="bg-editor-page shadow-lg page-container relative" style={{ padding: "78px 72px" }}>
               {!readOnly && <TableControls editor={editor} />}
               <EditorContent editor={editor} />
             </div>

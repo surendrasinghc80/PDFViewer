@@ -1,8 +1,8 @@
-# PageMaster Editor
+# Aditily
 
 A powerful, DOCX-style rich text editor and PDF viewer for React applications. Built with Tiptap, React PDF, and modern styling libraries.
 
-[![NPM Version](https://img.shields.io/npm/v/pagemaster-editor.svg)](https://www.npmjs.com/package/pagemaster-editor)
+[![NPM Version](https://img.shields.io/npm/v/aditily.svg)](https://www.npmjs.com/package/aditily)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -54,7 +54,7 @@ A powerful, DOCX-style rich text editor and PDF viewer for React applications. B
 ## Installation
 
 ```bash
-npm install pagemaster-editor
+npm install aditily
 ```
 
 ## Usage
@@ -64,14 +64,14 @@ npm install pagemaster-editor
 Import the component and its baseline styles. Ensure the parent container has a height.
 
 ```tsx
-import { DocumentEditor } from 'pagemaster-editor';
-import 'pagemaster-editor/dist/style.css';
+import { DocumentEditor } from 'aditily';
+import 'aditily/dist/style.css';
 
 function App() {
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
       <DocumentEditor 
-        initialContent="<h1>Welcome to PageMaster</h1>"
+        initialContent="<h1>Welcome to Aditily</h1>"
         onChange={(html) => console.log('Content updated:', html)}
       />
     </div>
@@ -81,16 +81,16 @@ function App() {
 
 ### Next.js Integration (SSR)
 
-Since PageMaster Editor uses browser-specific APIs (Canvas, DOM), it must be imported dynamically.
+Since Aditily uses browser-specific APIs (Canvas, DOM), it must be imported dynamically.
 
 ```tsx
 "use client";
 
 import dynamic from 'next/dynamic';
-import 'pagemaster-editor/dist/style.css';
+import 'aditily/dist/style.css';
 
 const DocumentEditor = dynamic(
-  () => import('pagemaster-editor').then((mod) => mod.DocumentEditor),
+  () => import('aditily').then((mod) => mod.DocumentEditor),
   { 
     ssr: false,
     loading: () => <div>Loading Editor...</div>
@@ -104,14 +104,14 @@ export default function Page() {
 
 ### Tailwind CSS Configuration
 
-PageMaster Editor uses Tailwind for styling. To ensure all library styles are properly purged/generated in your project:
+Aditily uses Tailwind for styling. To ensure all library styles are properly purged/generated in your project:
 
 #### Tailwind v3 (tailwind.config.js)
 ```javascript
 module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/pagemaster-editor/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/aditily/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {},
@@ -123,10 +123,10 @@ module.exports = {
 #### Tailwind v4 (globals.css)
 ```css
 @import "tailwindcss";
-@import "pagemaster-editor/style";
+@import "aditily/style";
 
 /* Ensure Tailwind scans the library for utility classes */
-@source "../../node_modules/pagemaster-editor/dist/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/aditily/dist/**/*.{js,ts,jsx,tsx}";
 ```
 
 ## Props

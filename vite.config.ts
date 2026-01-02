@@ -25,7 +25,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "PageMasterEditor",
+      name: "PagemasterEditor",
       formats: ["es", "umd"],
       fileName: (format) => `pagemaster-editor.${format === "es" ? "js" : "umd.cjs"}`,
     },
