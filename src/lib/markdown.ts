@@ -36,8 +36,9 @@ export async function markdownToHtml(markdown: string): Promise<string> {
     });
 
     try {
-        const html = await marked.parse(markdown);
-        return html;
+        // @ts-ignore
+        const html = marked.parse(markdown);
+        return html as string;
     } catch (error) {
         console.error('Error converting markdown to HTML:', error);
         return markdown; // Return original text if conversion fails

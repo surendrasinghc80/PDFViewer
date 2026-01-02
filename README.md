@@ -1,8 +1,8 @@
-# Aditily
+# Pagemaster Editor
 
 A powerful, DOCX-style rich text editor and PDF viewer for React applications. Built with Tiptap, React PDF, and modern styling libraries.
 
-[![NPM Version](https://img.shields.io/npm/v/aditily.svg)](https://www.npmjs.com/package/aditily)
+[![NPM Version](https://img.shields.io/npm/v/pagemaster-editor.svg)](https://www.npmjs.com/package/pagemaster-editor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -54,7 +54,7 @@ A powerful, DOCX-style rich text editor and PDF viewer for React applications. B
 ## Installation
 
 ```bash
-npm install aditily
+npm install pagemaster-editor
 ```
 
 ## Usage
@@ -64,14 +64,16 @@ npm install aditily
 Import the component and its baseline styles. Ensure the parent container has a height.
 
 ```tsx
-import { DocumentEditor } from 'aditily';
-import 'aditily/dist/style.css';
+import { DocumentEditor } from 'pagemaster-editor';
+import 'pagemaster-editor/dist/style.css';
 
 function App() {
+  const llmResponse = "# Welcome to Pagemaster Editor\n\nThis content is generated from **Markdown**!";
+
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
       <DocumentEditor 
-        initialContent="<h1>Welcome to Aditily</h1>"
+        initialContent={llmResponse}
         onChange={(html) => console.log('Content updated:', html)}
       />
     </div>
@@ -79,18 +81,28 @@ function App() {
 }
 ```
 
+### Using Markdown Content
+
+The editor automatically detects if `initialContent` is Markdown and converts it to rich HTML. This is perfect for displaying content from LLMs (AI) or CMS APIs.
+
+```tsx
+<DocumentEditor 
+  initialContent="## Generated Report\n\n- Point 1\n- Point 2" 
+/>
+```
+
 ### Next.js Integration (SSR)
 
-Since Aditily uses browser-specific APIs (Canvas, DOM), it must be imported dynamically.
+Since Pagemaster Editor uses browser-specific APIs (Canvas, DOM), it must be imported dynamically.
 
 ```tsx
 "use client";
 
 import dynamic from 'next/dynamic';
-import 'aditily/dist/style.css';
+import 'pagemaster-editor/dist/style.css';
 
 const DocumentEditor = dynamic(
-  () => import('aditily').then((mod) => mod.DocumentEditor),
+  () => import('pagemaster-editor').then((mod) => mod.DocumentEditor),
   { 
     ssr: false,
     loading: () => <div>Loading Editor...</div>
@@ -104,14 +116,14 @@ export default function Page() {
 
 ### Tailwind CSS Configuration
 
-Aditily uses Tailwind for styling. To ensure all library styles are properly purged/generated in your project:
+Pagemaster Editor uses Tailwind for styling. To ensure all library styles are properly purged/generated in your project:
 
 #### Tailwind v3 (tailwind.config.js)
 ```javascript
 module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/aditily/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/pagemaster-editor/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {},
@@ -123,10 +135,10 @@ module.exports = {
 #### Tailwind v4 (globals.css)
 ```css
 @import "tailwindcss";
-@import "aditily/style";
+@import "pagemaster-editor/style";
 
 /* Ensure Tailwind scans the library for utility classes */
-@source "../../node_modules/aditily/dist/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/pagemaster-editor/dist/**/*.{js,ts,jsx,tsx}";
 ```
 
 ## Props
@@ -135,7 +147,7 @@ The `DocumentEditor` component accepts the following props:
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `initialContent` | `string` | `""` | Initial HTML string to load into the editor. |
+| `initialContent` | `string` | `""` | Initial HTML string or **Markdown** to load into the editor. |
 | `className` | `string` | `""` | Additional CSS classes for the outer container. |
 | `onChange` | `(html: string) => void` | `undefined` | Callback function triggered on every content change. |
 | `readOnly` | `boolean` | `false` | If true, the editor is disabled and toolbars are hidden. |

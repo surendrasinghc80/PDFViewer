@@ -15,12 +15,13 @@ import { FontFamily } from "@tiptap/extension-font-family";
 import FontSize from "@tiptap/extension-font-size";
 import { CustomImage } from "@/extensions/CustomImage";
 import { MarkdownPaste } from "@/extensions/MarkdownPaste";
+import { isMarkdown, markdownToHtml } from "@/lib/markdown";
 import { EditorToolbar } from "./EditorToolbar";
 import { TableControls } from "./TableControls";
 import { ImageToolbar } from "./ImageToolbar";
 import { PDFViewer } from "@/components/pdf/PDFViewer";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import "./editor.css";
 
@@ -91,7 +92,12 @@ export function DocumentEditor(props: EditorProps = {}) {
       }),
       MarkdownPaste,
     ],
-    content: initialContent || "",
+    content: useMemo(() => {
+      if (initialContent && isMarkdown(initialContent)) {
+        return markdownToHtml(initialContent);
+      }
+      return initialContent || "";
+    }, [initialContent]),
     editorProps: {
       attributes: {
         class: "editor-content prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none max-w-none",

@@ -23,17 +23,12 @@ export const MarkdownPaste = Extension.create({
                             // Prevent default paste behavior
                             event.preventDefault();
 
-                            // Convert markdown to HTML asynchronously
-                            markdownToHtml(text).then((html) => {
-                                const cleanedHtml = prepareHtmlForEditor(html);
+                            // Convert markdown to HTML synchronously
+                            const html = markdownToHtml(text);
+                            const cleanedHtml = prepareHtmlForEditor(html);
 
-                                // Use TipTap's insertContent command to insert the HTML
-                                this.editor.commands.insertContent(cleanedHtml);
-                            }).catch((error) => {
-                                console.error('Error pasting markdown:', error);
-                                // Fallback: insert as plain text
-                                this.editor.commands.insertContent(text);
-                            });
+                            // Use TipTap's insertContent command to insert the HTML
+                            this.editor.commands.insertContent(cleanedHtml);
 
                             return true; // Prevent default paste
                         }
